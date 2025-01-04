@@ -1,0 +1,223 @@
+// Project Evasion
+console.log("> Program Executed <");
+console.log("")
+console.log("Game Concept: Collect Cheese for points! 🧀");
+console.log("This took 3 hours to make... ⌛");
+console.log("> Created by Ram Patel");
+
+// Canvas Consts
+const width = getWidth();
+const height = getHeight();
+const maxCollectables = 5;
+
+// Globals
+let dxObstacle = 3;
+let dyObstacle = 2;
+let obstacle;
+let player;
+let bg;
+let score = 0;
+let scoreLabel;
+let collectableCount = 0;
+let collectableTimer;
+let playButton;
+
+// Uploads
+const HAND = "https://codehs.com/uploads/780e1811c17d88d80893e5987bb459ee";
+
+// Start Game
+function startGame() {
+    // Background
+    let bg = new WebImage("https://codehs.com/uploads/5f43fed18b8ad2239056bd4c09e22fa9");
+    bg.setSize(width,height);
+    add(bg);
+    initPlayButton();
+}
+
+// Play Button
+function initPlayButton() {
+    playButton = new Rectangle(150, 50);
+    playButton.setPosition(width / 2 - 75, height / 2 - 180);
+    playButton.setColor("orange");
+    add(playButton);
+
+    let playText = new Text("Play", "20px Comic Sans MS");
+    playText.setColor("white");
+    playText.setPosition(width / 2 - playText.getWidth() / 2, height / 2 - 150);
+    add(playText);
+    // Audio
+    let startAudio = new Audio("https://codehs.com/uploads/d3feb8ac4b91e78d38713b7e4090aabe");
+    startAudio.loop = true;
+    startAudio.play();
+    
+    mouseClickMethod(function (e) {
+        let element = getElementAt(e.getX(), e.getY());
+        if (element == playButton || element == playText) {
+            remove(playButton);
+            remove(playText);
+            startAudio.pause();
+            main(); 
+        }
+    });
+}
+
+// Main Function
+function main() {
+    // Assets
+    initBackground();
+    audio();
+    // Gameplay
+    obstacle = initObstacle(["https://codehs.com/uploads/ecc5015f6dcf8181767f5544bd74019a", 50, 50, 100, 100]);
+    player = initPlayer(200, 200, 40, 40);
+    initScoreLabel();
+    setTimer(runObstacle, 50);
+    collectableTimer = setTimer(addItem, Randomizer.nextInt(2000, 5000));
+    mouseMoveHandler();
+    mouseClickHandler();
+    setTimer(playerControl, 50);
+}
+
+// Audio
+function audio() {
+    let theme = new Audio("https://codehs.com/uploads/acfb048188ed7bd62f26796006e78347");
+    theme.loop = true;
+    theme.play();
+}
+
+// Background
+function initBackground() {
+    bg = new WebImage("https://codehs.com/uploads/aa38fce178338ad9b5184825012128b3");
+    bg.setSize(width, height);
+    add(bg);
+}
+
+// Obstacle [Tom]
+function initObstacle(parameter) {
+    let [image, width, height, x, y] = parameter;
+    let tom = new WebImage("https://codehs.com/uploads/7d2ee7109a12bb79ca63de014447aae5");
+    tom.setSize(width, height);
+    tom.setPosition(x, y);
+    tom.layer = 10;
+    add(tom);
+    return tom;
+}
+
+// Score Label Initialization
+function initScoreLabel() {
+    scoreLabel = new Text("Cheese Collected: 0", "24px Comic Sans MS");
+    scoreLabel.setColor("white");
+    scoreLabel.setPosition(20, 40);
+    add(scoreLabel);
+}
+
+// Update Score
+function updateScore() {
+    score++;
+    scoreLabel.setText("Cheese Collected: " + score);
+}
+
+// Player [Jerry]
+function initPlayer(x, y, width, height) {
+    let jerry = new WebImage("https://codehs.com/uploads/b4952495e3990152fd5d1e70350bb7ee");
+    jerry.setSize(width, height / 1.4);
+    jerry.setPosition(x, y);
+    jerry.layer = 9;
+    add(jerry);
+    return jerry;
+}
+
+// Run Obstacle 
+function runObstacle() {
+    checkCollisions(obstacle, dxObstacle, dyObstacle);
+    obstacle.move(dxObstacle, dyObstacle);
+}
+
+// Collisions
+function checkCollisions(graphic, dx, dy) {
+    if (graphic.getX() <= 0 || graphic.getX() + graphic.getWidth() >= width) {
+        dxObstacle = -dxObstacle;
+    }
+    if (graphic.getY() <= 0 || graphic.getY() + graphic.getHeight() >= height) {
+        dyObstacle = -dyObstacle;
+    }
+}
+
+// Collectables
+function addItem() {
+    if (collectableCount >= maxCollectables) {
+        stopTimer(collectableTimer);
+        return;
+    }
+    let item = new WebImage("https://codehs.com/uploads/654a072d4693a1bdd989218b993988d6");
+    item.setSize(40, 40);
+    item.setPosition(Randomizer.nextInt(0, width - 40), Randomizer.nextInt(0, height - 40));
+    item.layer = 5;
+    add(item);
+    collectableCount++;
+}
+
+// Mouse Click
+function mouseClickHandler() {
+    mouseClickMethod(function (e) {
+        let element = getElementAt(e.getX(), e.getY());
+        if (element && element.type == "WebImage") {
+            if (element != obstacle && element != player && element != bg) {
+                remove(element);
+                collectableCount--;
+                updateScore(); // Update the score when collectable is clicked
+            }
+        }
+    });
+}
+
+// Mouse Move
+function mouseMoveHandler() {
+    let pointer = new WebImage(HAND);
+    pointer.setSize(30, 30);
+    pointer.setPosition(-50, -50);
+    pointer.layer = 11;
+    add(pointer);
+    // Hide the cursor
+    // The document.querySelector was taken by one of the examples throughout
+    // this project...
+    document.querySelector("body > canvas").style.cursor = "none";
+
+    mouseMoveMethod(function (e) {
+        pointer.setPosition(e.getX() + 1, e.getY() + 1);
+    });
+}
+
+// Player Control
+function playerControl() {
+    let moveAmount = 5;
+    let playerX = player.getX();
+    let playerY = player.getY();
+    let playerWidth = player.getWidth();
+    let playerHeight = player.getHeight();
+    let obstacleX = obstacle.getX();
+    let obstacleY = obstacle.getY();
+
+    // Direction to move away from Tom
+    let dx = playerX - obstacleX;
+    let dy = playerY - obstacleY;
+
+    // Balance Direction
+    let moveDirectionX = dx > 0 ? 1 : -1;
+    let moveDirectionY = dy > 0 ? 1 : -1;
+
+    // The Safe Zone
+    const safeMargin = 50;
+    const safeWidth = width - playerWidth - safeMargin;
+    const safeHeight = height - playerHeight - safeMargin;
+
+    if (playerX + moveDirectionX * moveAmount + playerWidth <= safeWidth && playerX + moveDirectionX * moveAmount >= safeMargin) {
+        player.move(moveDirectionX * moveAmount, 0);
+    }
+
+    if (playerY + moveDirectionY * moveAmount + playerHeight <= safeHeight && playerY + moveDirectionY * moveAmount >= safeMargin) {
+        player.move(0, moveDirectionY * moveAmount);
+    }
+}
+
+// Start Program
+startGame();
