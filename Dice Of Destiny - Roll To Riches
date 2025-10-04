@@ -1,0 +1,1908 @@
+// Consts  
+let width = getWidth();  
+let height = getHeight();  
+let x = 25;  
+let y = 75;  
+setSize(width * 1.25 + x, height * 1.25 - y);  
+  
+// Audio  
+let menuTheme = new Audio("https://codehs.com/uploads/1e62cc5f8dfd1402da2f1b36e02d9273");  
+let diceSFX = new Audio("https://codehs.com/uploads/b243ead10929a4123bdae5ce9ea6f04f");  
+let sixCutscene = new Audio("https://codehs.com/uploads/d181ef0c6f4ee74f0adcfd15e1813bc5");  
+let gameOverAudio = new Audio("https://codehs.com/uploads/96160ebbea963f7c84e91793805a5b86");  
+let jackpotSFX = new Audio("https://codehs.com/uploads/efd140937dffe8c6305a3a3019beddcd");
+let jackpotFailSFX = new Audio("https://codehs.com/uploads/57c68286a63837c43f13e58ae658f023");
+
+// Audio (By Rank)  
+let starterTheme = new Audio("https://codehs.com/uploads/7faf63522121dd9dfe31924202a2d08b"); //  Under 25k  
+let middleClassTheme = new Audio("https://codehs.com/uploads/09d148cb3d9a6ff476992ec561b0f3ad"); // 25k  
+let richTheme = new Audio("https://codehs.com/uploads/3e688ae4b7e6b800da7db12e6260b4aa"); // 100k  
+let millionareTheme = new Audio("https://codehs.com/uploads/20f7a7d0945522c80167f014bbc228ee") // 1M  
+let overloadedTheme = new Audio("https://codehs.com/uploads/6971959fea08b10f76647ccd36ee5809"); // 10M  
+let eliteTheme = new Audio("https://codehs.com/uploads/1e62cc5f8dfd1402da2f1b36e02d9273"); // 100M 
+let sucessionTheme = new Audio("https://codehs.com/uploads/688225741b3ba8d2565da1bf96ff84d6"); // 1B
+let timeTheme = new Audio("https://codehs.com/uploads/6087ad040928a1b4698afe0106430bef"); // 1T
+  
+// Audio (Loop)  
+starterTheme.loop = true;  
+middleClassTheme.loop = true;  
+richTheme.loop = true;  
+millionareTheme.loop = true;  
+overloadedTheme.loop = true;  
+eliteTheme.loop = true;  
+sucessionTheme.loop = true
+timeTheme.loop = true;
+
+// Global Variables  
+let balance = 0; 
+let rank = "Poor";  
+let dotsList = [];  
+let background;  
+let resultText = null;  
+let timerId = null;  
+let secondsPerDollar = 0;  
+let rollingInProgress = false;  
+let resultTimer;  
+let balanceTextObject;  
+let rollingText;  
+let cutscene = 0;  
+let dice;  
+let overloadedCutsceneTriggered = false;  
+let savingsTextObject = null;  
+let savings = 0;  
+let gambleText = null;  
+let goldBars = 0;  
+let goldBarText;
+// Special Global Variables
+let superDiceTickets = 0;  
+let superDiceButtonBg = null;  
+let superDiceButton = null;
+  
+// Main Menu  
+function createMenu() {   
+  // Create Menu   
+  let menuBg = new WebImage("https://codehs.com/uploads/554000b1dfa0ca5b5229abfde65e6438");   
+  menuBg.setSize(width * 1.25 + x, height * 1.25 - y);   
+  add(menuBg);   
+   
+  let menuText = new WebImage("https://codehs.com/uploads/dbac0e4b8ce623749e88ecbcae7c2004");   
+  menuText.setSize(width, height / 3.5);   
+  menuText.setPosition(100, 100);   
+  add(menuText);   
+   
+  let textBox = new Rectangle(200, 75);   
+  textBox.setPosition(50, 250); 
+  textBox.setColor("#05ddc0");   
+  add(textBox);   
+   
+  let play = new Text("Play", "30pt Raleway");   
+  play.setPosition(115, 300); 
+  play.setColor("white");   
+  add(play);   
+   
+  let howToPlayBox = new Rectangle(200, 75);   
+  howToPlayBox.setPosition(width - 100, 250);  
+  howToPlayBox.setColor("#05ddc0");   
+  add(howToPlayBox);   
+   
+  let howToPlay = new Text("How to Play", "25pt Raleway");   
+  howToPlay.setPosition(width - 80, 240);  
+  howToPlay.setColor("white");   
+  add(howToPlay);   
+   
+  menuTheme.loop = true;   
+  menuTheme.play();   
+   
+  let originalY = play.getY();
+   
+  mouseMoveMethod(function(e) {   
+   let element = getElementAt(e.getX(), e.getY());   
+   if (element == textBox || element == play) {   
+    play.setPosition(play.getX(), originalY - 5);   
+   } else {   
+    play.setPosition(play.getX(), originalY);   
+   }   
+   if (element == howToPlayBox || element == howToPlay) {   
+    howToPlay.setPosition(howToPlay.getX(), originalY - 5);   
+   } else if (element != textBox && element != play) {   
+    howToPlay.setPosition(howToPlay.getX(), originalY);   
+   }   
+  });   
+   
+  mouseClickMethod(function(e) {   
+   let element = getElementAt(e.getX(), e.getY());   
+   if (element == textBox || element == play) {   
+     remove(textBox);   
+     remove(play);   
+     remove(howToPlayBox);   
+     remove(howToPlay);   
+     remove(menuText);   
+     menuTheme.pause();   
+     starterTheme.play();   
+     playTrigger();   
+     setSize(width, height);   
+   } else if (element == howToPlayBox || element == howToPlay) {   
+    remove(textBox);   
+    remove(play);   
+    remove(howToPlayBox);   
+    remove(howToPlay);   
+    remove(menuText); 
+
+    // How To Play (- A Guide -)
+    let rulesBox = new Rectangle(width + 150,height + 100);   
+    rulesBox.setColor("white");   
+    add(rulesBox);   
+   
+    let rulesText = new Text("How To Play?", "25pt Arial Black");   
+    rulesText.setPosition(70, 40);   
+    rulesText.setColor("black");   
+    add(rulesText);   
+   
+    let rule1 = new Text("1) Roll the dice by clicking on the dice...", "15pt Raleway");   
+    rule1.setPosition(70, 75);   
+    rule1.setColor("black");   
+    add(rule1);   
+   
+    let rule2 = new Text("2) Each roll will give you a certain perk or loss", "15pt Raleway");   
+    rule2.setPosition(70, 100);   
+    rule2.setColor("black");   
+    add(rule2);   
+    
+    let rule3 = new Text("3) The game will get tougher as you gain more $$$", "15pt Raleway");   
+    rule3.setPosition(70, 125);   
+    rule3.setColor("black");   
+    add(rule3);   
+   
+    let rule4 = new Text("4) There are 4 main options, (50/50) (Roll) (Deposit) (Withdraw)", "12.5pt Raleway");   
+    rule4.setPosition(70, 150);   
+    rule4.setColor("black");   
+    add(rule4);   
+    
+    let rulesText2 = new Text("JACKPOT?", "25pt Arial Black");   
+    rulesText2.setPosition(70, 200);   
+    rulesText2.setColor("gold");   
+    add(rulesText2); 
+   
+    let rule5 = new Text("1) Happens when you get gold bars from rolling 6", "15pt Raleway");   
+    rule5.setPosition(45, 225);   
+    rule5.setColor("black");   
+    add(rule5);
+    
+    let rule6 = new Text("2) A chance where you may get a x777 balance multiplier...", "15pt Raleway");   
+    rule6.setPosition(45, 245);   
+    rule6.setColor("black");   
+    add(rule6);
+    
+    let buttons = new Text("Options?", "25pt Arial Black");   
+    buttons.setPosition(75, 285);   
+    buttons.setColor("red");   
+    add(buttons); 
+    
+    let buttons1 = new Text("1) 50/50 | 50% Win (x2 Multi) and 50% (Lose Everything)", "15pt Raleway");   
+    buttons1.setPosition(45, 320);   
+    buttons1.setColor("black");   
+    add(buttons1);
+    
+    let buttons2 = new Text("2) Roll | Roll The Dice for a number | Luck or Loss", "15pt Raleway");   
+    buttons2.setPosition(45, 345);   
+    buttons2.setColor("black");   
+    add(buttons2);
+    
+    let buttons3 = new Text("3) Deposit | Puts all your balance into ATM Savings", "15pt Raleway");   
+    buttons3.setPosition(45, 370);   
+    buttons3.setColor("black");   
+    add(buttons3);
+    
+    let buttons4 = new Text("4) Withdraw | Withdraws all ATM Savings to balance", "15pt Raleway");   
+    buttons4.setPosition(45, 395);   
+    buttons4.setColor("black");   
+    add(buttons4);
+    
+    let buttons5 = new Text("5) Super Roll | 100% Granted Win, Obtainable by a ticket", "15pt Raleway");   
+    buttons5.setPosition(45, 420);   
+    buttons5.setColor("gold");   
+    add(buttons5);
+    
+    let chance = new Text("(Roll A 6) Ticket Chance - [5%]", "12pt Raleway");   
+    chance.setPosition(155, 440);   
+    chance.setColor("black");   
+    add(chance);
+    
+    let title = new Text("Dice Of Destiny", "25pt Arial Black");   
+    title.setPosition(120, 490);   
+    title.setColor("lightgreen");   
+    add(title);
+    
+    let subheading = new Text("- Roll To Riches -", "15pt Arial Black");   
+    subheading.setPosition(160, 510);   
+    subheading.setColor("gray");   
+    add(subheading);
+    
+    let xMark = new Circle(30);   
+    xMark.setPosition(480, 35);   
+    xMark.setColor("red");   
+    add(xMark);   
+   
+    let xText = new Text("X", "36pt Raleway");   
+    xText.setPosition(465, 50);   
+    xText.setColor("white");   
+    add(xText);   
+   
+    mouseClickMethod(function(e) {   
+      let element = getElementAt(e.getX(), e.getY());   
+      if (element == xMark || element == xText) {   
+       remove(rulesBox);   
+       remove(rulesText);   
+       remove(rule1);   
+       remove(rule2);   
+       remove(xMark);   
+       remove(xText);   
+       createMenu();   
+      }   
+    });   
+   }   
+  });   
+}   
+createMenu();
+
+// Console  
+console.log("Rolling Prompt: [Track Your Number]");
+console.log("");
+  
+// Functions  
+function balanceText() {  
+  // Update Balance  
+  if (balanceTextObject) {  
+    remove(balanceTextObject);  
+  }  
+  
+  balanceTextObject = new Text("Balance: $" + balance, "15pt Comic Sans MS");  
+  balanceTextObject.setPosition(10, 20);  
+   
+  let rect = new Rectangle(170,100);  
+  let txt = new Text("Infinite JACKPOT WIN (100%)", "15pt Arial Black");
+   
+  if (balance >= 25000 && balance < 100000){ // 25k - 100k  
+   rect.setColor("#845433")  
+   rect.setPosition(220,455);  
+   add(rect);  
+   remove(txt);
+   balanceTextObject.setColor("white");  
+   balanceTextObject.setPosition(225,475);  
+  }  
+  else if (balance >= 100000 && balance < 1000000){ // 100K - 1M  
+   remove(rect); 
+   remove(txt);
+   balanceTextObject.setColor("white");  
+   balanceTextObject.setPosition(120,20);  
+  }  
+  else if (balance >= 1000000 && balance < 10000000){ // 1M - 10M  
+   remove(rect);  
+   remove(txt);
+   balanceTextObject.setColor("white");  
+   balanceTextObject.setPosition(110,20);  
+  }  
+  else if (balance >= 10000000 && balance < 100000000){ // 10M - 100M  
+   remove(rect);  
+   remove(txt);
+   balanceTextObject.setColor("#89001c");  
+   balanceTextObject.setPosition(100,25);  
+  } else if (balance >= 100000000 && balance < 1000000000){ // 100M - 1B  
+   remove(rect);  
+   remove(txt);
+   balanceTextObject.setColor("white");  
+   balanceTextObject.setPosition(100,20); 
+  } else if (balance >= 1000000000 && balance < 1000000000000){ // 1B - 1T 
+   remove(rect);  
+   remove(txt);
+   balanceTextObject.setColor("white");  
+   balanceTextObject.setPosition(100,475 + 2.5);
+  } else if (balance >= 1000000000000){ // (1T+)
+   remove(rect); 
+   txt.setColor("white");
+   txt.setPosition(10,75)
+   add(txt);
+   balanceTextObject.setColor("white");  
+   balanceTextObject.setPosition(10,50);
+  } else {  
+   remove(txt);
+   remove(rect);  
+   balanceTextObject.setColor("black");  
+  }  
+  add(balanceTextObject);  
+  if (balance < 0){  
+    remove(balanceTextObject);  
+  }  
+  updateRank();  
+  updateTheme();  
+}  
+  
+function depositBalance() {  
+  // Deposit Money  
+  savings += balance;  
+  balance = 0;  
+  balanceText();  
+  updateRank();  
+  
+  if (savingsTextObject) {  
+    remove(savingsTextObject);  
+  }  
+  
+  savingsTextObject = new Text("Deposited: $" + savings, "15pt Comic Sans MS");  
+  savingsTextObject.setPosition(width - 250, height - 20);  
+  savingsTextObject.setColor("black");  
+  add(savingsTextObject);  
+  updateTheme();  
+}  
+  
+function drawBackground() {  
+  if (!background) {  
+    background = new Rectangle(width, height);  
+  }  
+  
+  // 25K  
+  let middleClassBackground = new WebImage("https://codehs.com/uploads/39ab0561e580041691a841c00b68d7d4");  
+  // 100K  
+  let medievalBackground = new WebImage("https://codehs.com/uploads/4c5247aa4b72588312d0ab10fdf19306");  
+  // 1M  
+  let millionareBackground = new WebImage("https://codehs.com/uploads/5591d2cc37f21fc18f425fa71926a34b");  
+  // 10M  
+  let mochiBackground = new WebImage("https://codehs.com/uploads/b78b0f8e9b76c1b974d00668ca7bf13e");  
+  // 100M  
+  let galaxyBackground = new WebImage("https://codehs.com/uploads/881de8566bb88713a6ec4a4ab08721a2");  
+  // 1B
+  let sucessionBackground = new WebImage("https://codehs.com/uploads/7ac4f4f246cf96888818de53d05eae17");
+  // 1T
+  let timeBackground = new WebImage("https://codehs.com/uploads/d3f78648e69e08d5b47a5da826f62743");
+  
+  if (balance >= 0 && balance < 1){  
+    background.setColor("lightgreen");  
+    add(background);  
+  } else if (balance >= 25000 && balance < 100000){ // 25  
+    remove(background);  
+    middleClassBackground.setSize(width,height);  
+    add(middleClassBackground);  
+      
+  } else if (balance >= 100000 && balance < 1000000){ // 100K  
+    remove(background);  
+    medievalBackground.setSize(width,height);  
+    add(medievalBackground);  
+     
+  } else if (balance >= 1000000 && balance < 10000000){ // 1M  
+    remove(background);  
+    millionareBackground.setSize(width + 5,height);  
+    add(millionareBackground);  
+     
+  } else if (balance >= 10000000 && balance < 100000000){ // 10M  
+    remove(background);  
+    mochiBackground.setSize(width,height);  
+    add(mochiBackground);  
+  } else if (balance >= 100000000 && balance < 1000000000) { // 100M  
+    remove(background);  
+    galaxyBackground.setSize(width,height);  
+    add(galaxyBackground); 
+  } else if (balance >= 1000000000 && balance < 1000000000000) { // 1B 
+    remove(background);  
+    sucessionBackground.setSize(width,height);  
+    add(sucessionBackground);
+  } else if (balance >= 1000000000000) { // 1T+
+    remove(background);  
+    timeBackground.setSize(width,height);  
+    add(timeBackground);
+  } else {  
+    setSize(width,height);  
+    remove(timeBackground);
+    remove(sucessionBackground);
+    remove(galaxyBackground);  
+    remove(mochiBackground);  
+    remove(millionareBackground);  
+    remove(middleClassBackground);  
+    remove(medievalBackground);  
+    background.setColor("lightgreen");  
+    add(background);  
+  }  
+   
+  let rankText = new Text("Rank: " + rank, "15pt Comic Sans MS");  
+  rankText.setPosition(10, 50);  
+   
+  if (balance >= 25000 && balance < 100000){  // Off Canvas
+    rankText.setPosition(-20,0)  
+  }  
+  // 100K - 1M  
+  else if (balance >= 100000 && balance < 1000000){  
+   add(rankText);  
+   rankText.setColor("white");  
+   rankText.setPosition(155,50);  
+  }  
+  // 1M - 10M  
+  else if (balance >= 1000000 && balance < 10000000){  
+   add(rankText);  
+   rankText.setColor("#2c1032");  
+   rankText.setPosition(120,40);  
+  // 10M - 100M  
+  } else if (balance >= 10000000 && balance < 100000000){  
+   add(rankText);  
+   rankText.setColor("#2c1032");  
+   rankText.setPosition(115,45);  
+  // 100M - 1B  
+  } else if (balance >= 100000000 && balance < 1000000000){  
+   add(rankText);  
+   rankText.setColor("white");  
+   rankText.setPosition(155,310);
+  } else if (balance >= 1000000000 && balance < 1000000000000){ // Off Canvas (1B - 1T)
+   add(rankText);  
+   rankText.setColor("white");  
+   rankText.setPosition(-20,0);
+  } else if (balance >= 1000000000000){ // Off Canvas (1T+)
+   add(rankText);  
+   rankText.setColor("gold");  
+   rankText.setPosition(10,25);
+  } else {  
+    add(rankText);  
+    rankText.setColor("black");  
+  }  
+  add(rankText);  
+  balanceText();  
+}  
+  
+function drawButtons() {  
+  // Create Buttons  
+  let depositButtonBg = new Rectangle(140, 40);  
+  depositButtonBg.setColor("black");  
+  depositButtonBg.setPosition(width / 4 - 60, height / 2 + 110);  
+  add(depositButtonBg);  
+  
+  let depositButton = new Text("Deposit", "20pt Comic Sans MS");  
+  depositButton.setPosition(width / 4 - 45, height / 2 + 140);  
+  depositButton.setColor("white");
+  
+  let withdrawButtonBg = new Rectangle(140, 40);  
+  withdrawButtonBg.setColor("black");  
+  withdrawButtonBg.setPosition(width * 3 / 4 - 70, height / 2 + 110);  
+  add(withdrawButtonBg);  
+  
+  let withdrawButton = new Text("Withdraw", "20pt Comic Sans MS");  
+  withdrawButton.setPosition(width * 3 / 4 - 50, height / 2 + 140);  
+  withdrawButton.setColor("white");  
+  add(withdrawButton);  
+  
+  if (goldBars > 0) {  
+    let useGoldBarButtonBg = new Rectangle(140, 40);  
+    useGoldBarButtonBg.setColor("black");  
+    useGoldBarButtonBg.setPosition(width / 2 - 70, height - 60);  
+    add(useGoldBarButtonBg);  
+  
+    let useGoldBarButton = new Text("Use Gold Bar", "15pt Comic Sans MS");  
+    useGoldBarButton.setPosition(width / 2 - 55, height - 30);  
+    useGoldBarButton.setColor("white");  
+    add(useGoldBarButton);  
+  
+    mouseClickMethod((e) => {  
+       if (  
+          e.getX() >= useGoldBarButtonBg.getX() &&  
+          e.getX() <= useGoldBarButtonBg.getX() + useGoldBarButtonBg.getWidth() &&  
+          e.getY() >= useGoldBarButtonBg.getY() &&  
+          e.getY() <= useGoldBarButtonBg.getY() + useGoldBarButtonBg.getHeight()  
+       ) {  
+          let chance = Randomizer.nextInt(1, 100);
+          if (chance <= 10) {  
+            balance *= 777;  
+            let jackpotText = new Text("JACKPOT!", "40pt Arial Black"); 
+            jackpotSFX.play();
+            jackpotText.setColor("gold");
+            jackpotText.setPosition(width / 2 - 100, height / 2);  
+            add(jackpotText);  
+            setTimer(() => {  
+               remove(jackpotText);  
+            }, 2000);  
+          } else {  
+            let noJackpotText = new Text("No Jackpot", "40pt Arial Black");  
+            noJackpotText.setPosition(width / 2 - 150, height / 2);  
+            noJackpotText.setColor("red");
+            jackpotFailSFX.play();
+            add(noJackpotText);  
+            setTimer(() => {  
+               remove(noJackpotText);  
+            }, 2000);  
+          }  
+          goldBars--;  
+          if (goldBarText) {  
+            remove(goldBarText);  
+          }  
+          if (goldBars > 0) {  
+            goldBarText = new Text("Gold Bars: " + goldBars, "20pt Arial Black");  
+            goldBarText.setPosition(width / 2 - 75, height / 2 + 200);  
+            add(goldBarText);  
+          }  
+          balanceText();  
+          updateRank();  
+          checkDebt();  
+       }  
+    });  
+  }  
+  
+  mouseClickMethod((e) => {  
+    if (  
+       e.getX() >= depositButtonBg.getX() &&  
+       e.getX() <= depositButtonBg.getX() + depositButtonBg.getWidth() &&  
+       e.getY() >= depositButtonBg.getY() &&  
+       e.getY() <= depositButtonBg.getY() + depositButtonBg.getHeight()  
+    ) {  
+       depositBalance();  
+    } else if (  
+       e.getX() >= withdrawButtonBg.getX() &&  
+       e.getX() <= withdrawButtonBg.getX() + withdrawButtonBg.getWidth() &&  
+       e.getY() >= withdrawButtonBg.getY() &&  
+       e.getY() <= withdrawButtonBg.getY() + withdrawButtonBg.getHeight()  
+    ) {  
+       withdrawBalance();  
+    }  
+  });  
+}  
+  
+function drawDice() {  
+  // Create Dice  
+  dice = new Rectangle(100, 100);  
+   
+  if (balance >= 25000 && balance < 100000){  // 25k - 100k  
+  dice.setColor("#845433");   
+  } else if (balance >= 100000 && balance < 1000000){  // 100k - 1M  
+  dice.setColor("black");   
+  } else if (balance >= 1000000 && balance < 10000000){  // - 1M - 10M  
+  dice.setColor("#082e86");   
+  } else if (balance >= 10000000 && balance < 100000000){  // 10M - 100M  
+  dice.setColor("#be0c33");   
+  } else if (balance >= 100000000 && balance < 1000000000){  // 100M - 1B  
+  dice.setColor("#0b1c34");   
+  } else if (balance >= 1000000000 && balance < 1000000000000){  // 1B - 1T  
+  dice.setColor("#070508");   
+  } else if (balance >= 1000000000000){  // 1T+  
+  dice.setColor("#6f411c");   
+  } else {   
+  dice.setColor("white");   
+  }   
+    
+  dice.setPosition(width / 2 - 50, height / 2 - 50);   
+  add(dice);   
+    
+  let diceRoll = Randomizer.nextInt(1, 6);   
+  console.log("Dice Rolled: " + diceRoll);   
+  drawDiceDots(diceRoll);   
+    
+  let oneUp = 1;   
+  let orderedOnes = 0;   
+  let timerId = null;   
+  if (diceRoll == 1) {   
+  orderedOnes++;   
+  oneUp = orderedOnes;   
+  if (balance >= 0) {   
+   if (!timerId) {   
+    timerId = setTimer(function() {   
+     balance = Math.floor(balance + 1);   
+     balanceText();   
+     updateRank();   
+    }, 1000);   
+   }   
+  }   
+  } else if (diceRoll == 2) {   
+  let chance = Randomizer.nextInt(1, 3);   
+  if (gambleText) {   
+   remove(gambleText);   
+  }   
+  gambleText = new Text("", "15pt Arial Black");   
+  if (balance >= 25000 && balance < 100000){   
+   gambleText.setColor("#5b270d");   
+   gambleText.setPosition(135, 450);   
+  } else if (balance >= 100000 && balance < 1000000){   
+   gambleText.setColor("white");   
+   gambleText.setPosition(80, 475);   
+  } else if (balance >= 1000000 && balance < 10000000){   
+   gambleText.setColor("white");   
+   gambleText.setPosition(80, 475);   
+  } else if (balance >= 10000000 && balance < 100000000){   
+   gambleText.setColor("#430f2a");   
+   gambleText.setPosition(80, 100);   
+  } else if (balance >= 100000000 && balance < 1000000000){   
+   gambleText.setColor("#303042");   
+   gambleText.setPosition(85, 475);   
+  } else if (balance >= 1000000000 && balance < 1000000000000){   
+   gambleText.setColor("#FFFF00");   
+   gambleText.setPosition(80, 350);   
+  } else if (balance >= 1000000000000){   
+   gambleText.setColor("gold");   
+   gambleText.setPosition(150, 475);   
+  } else {   
+   gambleText.setColor("black");   
+   gambleText.setPosition(80, 175);   
+  }   
+  if (balance < 10000) {   
+   let chance = Randomizer.nextInt(1, 3);  
+   if (chance == 1) {  
+    balance = Math.floor(balance + 50000);  
+    gambleText.setText("You earned $50K");  
+   } else if (chance == 2) {  
+    balance = Math.floor(balance - 5000);  
+    gambleText.setText("You lost $5K");  
+   } else {  
+    balance = Math.floor(balance - 1000);  
+    gambleText.setText("You lost $1K");  
+   }  
+  } else if (balance >= 10000 && balance < 25000) {   
+   if (chance == 1) {   
+    balance = Math.floor(balance + 50000);   
+    gambleText.setText("You earned $50K");   
+   } else if (chance == 2) {   
+    balance = Math.floor(balance - 10000);   
+    gambleText.setText("You lost $10K");   
+   } else {   
+    balance = Math.floor(balance - 5000);   
+    gambleText.setText("You lost $5K");   
+   }   
+  } else if (balance >= 25000 && balance < 50000) {   
+   if (chance == 1) {   
+    balance = Math.floor(balance + 50000);   
+    gambleText.setText("You earned $50K");   
+   } else if (chance == 2) {   
+    balance = Math.floor(balance - 20000);   
+    gambleText.setText("You lost $20K");   
+   } else {   
+    balance = Math.floor(balance - 10000);   
+    gambleText.setText("You lost $10K");   
+   }   
+  } else if (balance >= 50000 && balance < 100000) {   
+   if (chance == 1) {   
+    balance = Math.floor(balance + 100000);   
+    gambleText.setText("You earned $100K");   
+   } else if (chance == 2) {   
+    balance = Math.floor(balance - 50000);   
+    gambleText.setText("You lost $50K");   
+   } else {   
+    balance = Math.floor(balance - 20000);   
+    gambleText.setText("You lost $20K");   
+   }   
+  } else if (balance >= 100000 && balance < 1000000) {   
+   if (chance == 1) {   
+    balance = Math.floor(balance + 200000);   
+    gambleText.setText("You earned $200K");   
+   } else if (chance == 2) {   
+    balance = Math.floor(balance - 100000);   
+    gambleText.setText("You lost $100K");   
+   } else {   
+    balance = Math.floor(balance - 50000);   
+    gambleText.setText("You lost $50K");   
+   }   
+  } else if (balance >= 1000000 && balance < 10000000) {   
+   if (chance == 1) {   
+    balance = Math.floor(balance + 500000);   
+    gambleText.setText("You earned $500K");   
+   } else if (chance == 2) {   
+    balance = Math.floor(balance - 200000);   
+    gambleText.setText("You lost $200K");   
+   } else {   
+    balance = Math.floor(balance - 100000);   
+    gambleText.setText("You lost $100K");   
+   }   
+  } else if (balance >= 10000000 && balance < 100000000) {   
+   if (chance == 1) {   
+    balance = Math.floor(balance + 1000000);   
+    gambleText.setText("You earned $1M");   
+   } else if (chance == 2) {   
+    balance = Math.floor(balance - 500000);   
+    gambleText.setText("You lost $500K");   
+   } else {   
+    balance = Math.floor(balance - 200000);   
+    gambleText.setText("You lost $200K");   
+   }   
+  } else if (balance >= 100000000 && balance < 1000000000) {   
+   if (chance == 1) {   
+    balance = Math.floor(balance + 2000000);   
+    gambleText.setText("You earned $2M");   
+   } else if (chance == 2) {   
+    balance = Math.floor(balance - 1000000);   
+    gambleText.setText("You lost $1M");   
+   } else {   
+    balance = Math.floor(balance - 500000);   
+    gambleText.setText("You lost $500K");   
+   }   
+  } else if (balance >= 1000000000 && balance < 1000000000000) {   
+   if (chance == 1) {   
+    balance = Math.floor(balance + 5000000);   
+    gambleText.setText("You earned $5M");   
+   } else if (chance == 2) {   
+    balance = Math.floor(balance - 2000000);   
+    gambleText.setText("You lost $2M");   
+   } else {   
+    balance = Math.floor(balance - 1000000);   
+    gambleText.setText("You lost $1M");   
+   }   
+  } else {   
+   if (chance == 1) {   
+    balance = Math.floor(balance + 10000000);   
+    gambleText.setText("You earned $10M");   
+   } else if (chance == 2) {   
+    balance = Math.floor(balance - 5000000);   
+    gambleText.setText("You lost $5M");   
+   } else {   
+    balance = Math.floor(balance - 2000000);   
+    gambleText.setText("You lost $2M");   
+   }   
+  }   
+  add(gambleText);   
+  balanceText();   
+  updateRank();   
+  checkDebt();   
+  } else if (diceRoll == 3) {   
+  let chance = Randomizer.nextInt(1, 5);   
+  if (gambleText) {   
+   remove(gambleText);   
+  }   
+  gambleText = new Text("", "17.5pt Arial Black");   
+  if (balance >= 25000 && balance < 100000){   
+   gambleText.setColor("#5b270d");   
+   gambleText.setPosition(135, 450);   
+  } else if (balance >= 100000 && balance < 1000000){   
+   gambleText.setColor("white");   
+   gambleText.setPosition(80, 475);   
+  } else if (balance >= 1000000 && balance < 10000000){   
+   gambleText.setColor("white");   
+   gambleText.setPosition(80, 475);   
+  } else if (balance >= 10000000 && balance < 100000000){   
+   gambleText.setColor("#430f2a");   
+   gambleText.setPosition(80, 100);   
+  } else if (balance >= 100000000 && balance < 1000000000){   
+   gambleText.setColor("#303042");   
+   gambleText.setPosition(85, 475);   
+  } else if (balance >= 1000000000 && balance < 1000000000000){   
+   gambleText.setColor("#FFFF00");   
+   gambleText.setPosition(80, 350);   
+  } else if (balance >= 1000000000000){   
+   gambleText.setColor("gold");   
+   gambleText.setPosition(150, 475);   
+  } else {   
+   gambleText.setColor("black");   
+   gambleText.setPosition(80, 175);   
+  }   
+  if (balance < 10000) {   
+   balance = Math.floor(balance + 100000);   
+   gambleText.setText("You earned $100K");   
+  } else if (balance >= 10000 && balance < 25000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 100000);   
+    gambleText.setText("You earned $100K");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 10000);   
+    gambleText.setText("You lost $10K");   
+   } else {   
+    balance = Math.floor(balance - 5000);   
+    gambleText.setText("You lost $5K");   
+   }   
+  } else if (balance >= 25000 && balance < 50000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 100000);   
+    gambleText.setText("You earned $100K");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 20000);   
+    gambleText.setText("You lost $20K");   
+   } else {  
+    balance = Math.floor(balance - 10000);   
+    gambleText.setText("You lost $10K");   
+   }   
+  } else if (balance >= 50000 && balance < 100000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 200000);   
+    gambleText.setText("You earned $200K");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 50000);   
+    gambleText.setText("You lost $50K");   
+   } else {   
+    balance = Math.floor(balance - 20000);   
+    gambleText.setText("You lost $20K");   
+   }   
+  } else if (balance >= 100000 && balance < 1000000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 500000);   
+    gambleText.setText("You earned $500K");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 100000);   
+    gambleText.setText("You lost $100K");   
+   } else {   
+    balance = Math.floor(balance - 50000);   
+    gambleText.setText("You lost $50K");   
+   }   
+  } else if (balance >= 1000000 && balance < 10000000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 1000000);   
+    gambleText.setText("You earned $1M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 200000);   
+    gambleText.setText("You lost $200K");   
+   } else {   
+    balance = Math.floor(balance - 100000);   
+    gambleText.setText("You lost $100K");   
+   }   
+  } else if (balance >= 10000000 && balance < 100000000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 2000000);   
+    gambleText.setText("You earned $2M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 500000);   
+    gambleText.setText("You lost $500K");   
+   } else {   
+    balance = Math.floor(balance - 200000);   
+    gambleText.setText("You lost $200K");   
+   }   
+  } else if (balance >= 100000000 && balance < 1000000000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 5000000);   
+    gambleText.setText("You earned $5M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 1000000);   
+    gambleText.setText("You lost $1M");   
+   } else {   
+    balance = Math.floor(balance - 500000);   
+    gambleText.setText("You lost $500K");   
+   }   
+  } else if (balance >= 1000000000 && balance < 1000000000000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 10000000);   
+    gambleText.setText("You earned $10M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 2000000);   
+    gambleText.setText("You lost $2M");   
+   } else {   
+    balance = Math.floor(balance - 1000000);   
+    gambleText.setText("You lost $1M");   
+   }   
+  } else {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 20000000);   
+    gambleText.setText("You earned $20M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 5000000);   
+    gambleText.setText("You lost $5M");   
+   } else {   
+    balance = Math.floor(balance - 2000000);   
+    gambleText.setText("You lost $2M");   
+   }   
+  }   
+  add(gambleText);   
+  balanceText();   
+  updateRank();   
+  checkDebt();   
+  } else if (diceRoll == 4) {   
+  let chance = Randomizer.nextInt(1, 5);   
+  if (gambleText) {   
+   remove(gambleText);   
+  }   
+  gambleText = new Text("", "17.5pt Arial Black");   
+  if (balance >= 25000 && balance < 100000){   
+   gambleText.setPosition(135, 450);   
+  } else if (balance >= 100000 && balance < 1000000){   
+   gambleText.setColor("white");   
+   gambleText.setPosition(80, 475);   
+  } else if (balance >= 1000000 && balance < 10000000){   
+   gambleText.setColor("white");   
+   gambleText.setPosition(80, 475);   
+  } else if (balance >= 10000000 && balance < 100000000){   
+   gambleText.setColor("#430f2a");   
+   gambleText.setPosition(80, 100);   
+  } else if (balance >= 100000000 && balance < 1000000000){   
+   gambleText.setColor("#303042");   
+   gambleText.setPosition(85, 475);   
+  } else if (balance >= 1000000000 && balance < 1000000000000){   
+   gambleText.setColor("#FFFF00");   
+   gambleText.setPosition(80, 350);   
+  } else if (balance >= 1000000000000){   
+   gambleText.setColor("gold");   
+   gambleText.setPosition(150, 475);   
+  } else {   
+   gambleText.setColor("black");   
+   gambleText.setPosition(80, 175);   
+  }   
+  if (balance < 10000) {   
+   balance = Math.floor(balance + 1000000);   
+   gambleText.setText("You earned $1M");   
+  } else if (balance >= 10000 && balance < 25000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 1000000);   
+    gambleText.setText("You earned $1M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 50000);   
+    gambleText.setText("You lost $50K");   
+   } else {   
+    balance = Math.floor(balance - 20000);   
+    gambleText.setText("You lost $20K");   
+   }   
+  } else if (balance >= 25000 && balance < 50000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 1000000);   
+    gambleText.setText("You earned $1M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 100000);   
+    gambleText.setText("You lost $100K");   
+   } else {   
+    balance = Math.floor(balance - 50000);   
+    gambleText.setText("You lost $50K");   
+   }   
+  } else if (balance >= 50000 && balance < 100000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 2000000);   
+    gambleText.setText("You earned $2M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 200000);   
+    gambleText.setText("You lost $200K");   
+   } else {   
+    balance = Math.floor(balance - 100000);   
+    gambleText.setText("You lost $100K");   
+   }   
+  } else if (balance >= 100000 && balance < 1000000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 5000000);   
+    gambleText.setText("You earned $5M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 500000);   
+    gambleText.setText("You lost $500K");   
+   } else {   
+    balance = Math.floor(balance - 200000);   
+    gambleText.setText("You lost $200K");   
+   }   
+  } else if (balance >= 1000000 && balance < 10000000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 10000000);   
+    gambleText.setText("You earned $10M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 1000000);   
+    gambleText.setText("You lost $1M");   
+   } else {   
+    balance = Math.floor(balance - 500000);   
+    gambleText.setText("You lost $500K");   
+   }   
+  } else if (balance >= 10000000 && balance < 100000000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 20000000);   
+    gambleText.setText("You earned $20M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 2000000);   
+    gambleText.setText("You lost $2M");   
+   } else {   
+    balance = Math.floor(balance - 1000000);   
+    gambleText.setText("You lost $1M");   
+   }   
+  } else if (balance >= 100000000 && balance < 1000000000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 50000000);   
+    gambleText.setText("You earned $50M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 5000000);   
+    gambleText.setText("You lost $5M");   
+   } else {   
+    balance = Math.floor(balance - 2000000);   
+    gambleText.setText("You lost $2M");   
+   }   
+  } else if (balance >= 1000000000 && balance < 1000000000000) {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 100000000);   
+    gambleText.setText("You earned $100M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 10000000);   
+    gambleText.setText("You lost $10M");   
+   } else {   
+    balance = Math.floor(balance - 5000000);   
+    gambleText.setText("You lost $5M");   
+   }   
+  } else {   
+   if (chance <= 2) {   
+    balance = Math.floor(balance + 200000000);   
+    gambleText.setText("You earned $200M");   
+   } else if (chance == 3) {   
+    balance = Math.floor(balance - 20000000);   
+    gambleText.setText("You lost $20M");   
+   } else {   
+    balance = Math.floor(balance - 10000000);   
+    gambleText.setText("You lost $10M");   
+   }   
+  }   
+  add(gambleText);   
+  balanceText();   
+  updateRank();   
+  checkDebt();   
+  } else if (diceRoll == 5) {   
+  let chance = Randomizer.nextInt(1, 100);   
+  if (gambleText) {   
+   remove(gambleText);   
+  }   
+  gambleText = new Text("", "15pt Arial Black");   
+  if (balance >= 25000 && balance < 100000){   
+   gambleText.setColor("#5b270d");   
+   gambleText.setPosition(135, 450);  
+  } else if (balance >= 100000 && balance < 1000000){   
+   gambleText.setColor("white");   
+   gambleText.setPosition(80, 475);   
+  } else if (balance >= 1000000 && balance < 10000000){   
+   gambleText.setColor("white");   
+   gambleText.setPosition(80, 475);   
+  } else if (balance >= 10000000 && balance < 100000000){   
+   gambleText.setColor("#430f2a");   
+   gambleText.setPosition(80, 100);   
+  } else if (balance >= 100000000 && balance < 1000000000){   
+   gambleText.setColor("#303042");   
+   gambleText.setPosition(85, 475);   
+  } else if (balance >= 1000000000 && balance < 1000000000000){   
+   gambleText.setColor("#FFFF00");   
+   gambleText.setPosition(80, 350);   
+  } else if (balance >= 1000000000000){   
+   gambleText.setColor("gold");   
+   gambleText.setPosition(150, 475);   
+  } else {   
+   gambleText.setColor("black");   
+   gambleText.setPosition(80, 175);   
+  }   
+  if (balance < 10000) {   
+   balance = Math.floor(balance * 1.5);   
+   gambleText.setText("  1.5x Balance");   
+  } else if (balance >= 10000 && balance < 25000) {   
+   if (chance <= 50) {   
+    balance = Math.floor(balance * 1.5);   
+    gambleText.setText("  1.5x Balance");   
+   }  else {   
+    balance = Math.floor(balance / 2);   
+    gambleText.setText("  Halved Balance")   
+   }   
+  } else if (balance >= 25000 && balance < 50000) {   
+   if (chance <= 40) {   
+    balance = Math.floor(balance * 1.5);   
+    gambleText.setText("  1.5x Balance");   
+   }  else {   
+    balance = Math.floor(balance / 2);   
+    gambleText.setText("  Halved Balance")   
+   }   
+  } else if (balance >= 50000 && balance < 100000) {   
+   if (chance <= 30) {   
+    balance = Math.floor(balance * 1.5);   
+    gambleText.setText("  1.5x Balance");   
+   }  else {   
+    balance = Math.floor(balance / 2);   
+    gambleText.setText("  Halved Balance")   
+   }   
+  } else if (balance >= 100000 && balance < 1000000) {   
+   if (chance <= 20) {   
+    balance = Math.floor(balance * 1.5);   
+    gambleText.setText("  1.5x Balance");   
+   }  else {   
+    balance = Math.floor(balance / 2);   
+    gambleText.setText("  Halved Balance")   
+   }   
+  } else if (balance >= 1000000 && balance < 10000000) {   
+   if (chance <= 10) {   
+    balance = Math.floor(balance * 1.5);   
+    gambleText.setText("  1.5x Balance");   
+   }  else {   
+    balance = Math.floor(balance / 2);   
+    gambleText.setText("  Halved Balance")   
+   }   
+  } else if (balance >= 10000000 && balance < 100000000) {   
+   if (chance <= 5) {   
+    balance = Math.floor(balance * 1.5);   
+    gambleText.setText("  1.5x Balance");   
+   }  else {   
+    balance = Math.floor(balance / 2);   
+    gambleText.setText("  Halved Balance")   
+   }   
+  } else {   
+   if (chance <= 1) {   
+    balance = Math.floor(balance * 1.5);   
+    gambleText.setText("  1.5x Balance");   
+   }  else {   
+    balance = Math.floor(balance / 2);   
+    gambleText.setText("  Halved Balance")   
+   }   
+  }   
+  add(gambleText);   
+  balanceText();   
+  updateRank();   
+  checkDebt();   
+  } else if(diceRoll == 6) {  
+   let chance = Randomizer.nextInt(1, 100);  
+   if (gambleText) {  
+    remove(gambleText);  
+   }  
+   gambleText = new Text("", "17.5pt Arial Black");  
+   if (balance >= 25000 && balance < 100000){  
+    gambleText.setColor("#5b270d");  
+    gambleText.setPosition(135, 450);  
+   } else if (balance >= 100000 && balance < 1000000){  
+    gambleText.setColor("white");  
+    gambleText.setPosition(80, 475);  
+   } else if (balance >= 1000000 && balance < 10000000){  
+    gambleText.setColor("white");  
+    gambleText.setPosition(80, 475);  
+   } else if (balance >= 10000000 && balance < 100000000){  
+    gambleText.setColor("#430f2a");  
+    gambleText.setPosition(80, 100);  
+   } else if (balance >= 100000000 && balance < 1000000000){  
+    gambleText.setColor("#303042");  
+    gambleText.setPosition(85, 475);  
+   } else if (balance >= 1000000000 && balance < 1000000000000){  
+    gambleText.setColor("#FFFF00");  
+    gambleText.setPosition(80, 350);  
+   } else if (balance >= 1000000000000){  
+    gambleText.setColor("gold");  
+    gambleText.setPosition(150, 475);  
+   } else {  
+    gambleText.setColor("black");  
+    gambleText.setPosition(80, 175);  
+   }  
+   if (balance < 10000) {  
+    balance = Math.floor(balance + 1000000);  
+    gambleText.setText("You earned $1M");  
+   } else if (balance >= 10000 && balance < 25000) {  
+    if (chance <= 30) {  
+      balance = Math.floor(balance + 1000000);  
+      gambleText.setText("You earned $1M");  
+    } else if (chance <= 70) {  
+      balance = Math.floor(balance - 50000);  
+      gambleText.setText("You lost $50K");  
+    } else {  
+      goldBars = goldBars + 1;  
+      gambleText.setText("  Gold Bar");  
+      if (goldBarText) {  
+       remove(goldBarText);  
+      }  
+    }  
+   } else if (balance >= 25000 && balance < 50000) {  
+    if (chance <= 20) {  
+      balance = Math.floor(balance + 1000000);  
+      gambleText.setText("You earned $1M");  
+    } else if (chance <= 60) {  
+      balance = Math.floor(balance - 100000);  
+      gambleText.setText("You lost $100K");  
+    } else {  
+      goldBars = goldBars + 1;  
+      gambleText.setText("  Gold Bar");  
+      if (goldBarText) {  
+       remove(goldBarText);  
+      }  
+    }  
+   } else if (balance >= 50000 && balance < 100000) {  
+    if (chance <= 10) {  
+      balance = Math.floor(balance + 5000000);  
+      gambleText.setText("You earned $5M");  
+    } else if (chance <= 50) {  
+      balance = Math.floor(balance - 200000);  
+      gambleText.setText("You lost $200K");  
+    } else {  
+      goldBars = goldBars + 1;  
+      gambleText.setText("  Gold Bar");  
+      if (goldBarText) {  
+       remove(goldBarText);  
+      }  
+    }  
+   } else if (balance >= 100000 && balance < 1000000) {  
+    if (chance <= 5) {  
+      balance = Math.floor(balance + 10000000);  
+      gambleText.setText("You earned $10M");  
+    } else if (chance <= 40) {  
+      balance = Math.floor(balance - 500000);  
+      gambleText.setText("You lost $500K");  
+    } else {  
+      goldBars = goldBars + 1;  
+      gambleText.setText("  Gold Bar");  
+      if (goldBarText) {  
+       remove(goldBarText);  
+      }  
+    }  
+   } else if (balance >= 1000000 && balance < 10000000) {  
+    if (chance <= 2) {  
+      balance = Math.floor(balance + 50000000);  
+      gambleText.setText("You earned $50M");  
+    } else if (chance <= 30) {  
+      balance = Math.floor(balance - 2000000);  
+      gambleText.setText("You lost $2M");  
+    } else {  
+      goldBars = goldBars + 1;  
+      gambleText.setText("  Gold Bar");  
+      if (goldBarText) {  
+       remove(goldBarText);  
+      }  
+    }  
+   } else if (balance >= 10000000 && balance < 100000000) {  
+    if (chance <= 1) {  
+      balance = Math.floor(balance + 100000000);  
+      gambleText.setText("You earned $100M");  
+    } else if (chance <= 20) {  
+      balance = Math.floor(balance - 5000000);  
+      gambleText.setText("You lost $5M");  
+    } else {  
+      goldBars = goldBars + 1;  
+      gambleText.setText("  Gold Bar");  
+      if (goldBarText) {  
+       remove(goldBarText);  
+      }  
+    }  
+   } else {  
+    if (chance <= 1) {  
+      balance = Math.floor(balance + 200000000);  
+      gambleText.setText("You earned $200M");  
+    } else if (chance <= 10) {  
+      balance = Math.floor(balance - 10000000);  
+      gambleText.setText("You lost $10M");  
+    } else {  
+      goldBars = goldBars + 1;  
+      gambleText.setText("  Gold Bar");  
+      if (goldBarText) {  
+       remove(goldBarText);  
+      }  
+    }  
+   }  
+   if (chance <= 5) { // 5% Chance
+    superDiceTickets++;  
+    let superDiceText = new Text("You got a Super Dice Ticket!", "15pt Arial Black");  
+    superDiceText.setPosition(width / 2 - 150, height / 2);  
+    superDiceText.setColor("gold");  
+    add(superDiceText);  
+    setTimer(() => {  
+      remove(superDiceText);  
+    }, 2000);  
+   }  
+   add(gambleText);  
+   balanceText();  
+   updateRank();  
+   checkDebt();  
+  }  
+  
+  mouseClickMethod((e) => {  
+   if (  
+    e.getX() >= dice.getX() &&  
+    e.getX() <= dice.getX() + dice.getWidth() &&  
+    e.getY() >= dice.getY() &&  
+    e.getY() <= dice.getY() + dice.getHeight()  
+   ) {  
+    if (goldBars > 0) {  
+      let chance = Randomizer.nextInt(1, 100);  
+      if (balance >= 1000000000000 || chance <= 7) {  
+       balance = Math.floor(balance * 777);  
+       let jackpotText = new Text("JACKPOT!", "40pt Arial Black");  
+       jackpotText.setPosition(width / 2 - 150, height / 2);  
+       jackpotSFX.play();  
+       jackpotText.setColor("gold");  
+       add(jackpotText);  
+       setTimer(() => {  
+        remove(jackpotText);  
+       }, 2000);  
+      } else {  
+       let noJackpotText = new Text("No Jackpot", "40pt Arial Black");  
+       noJackpotText.setPosition(width / 2 - 150, height / 2);  
+       noJackpotText.setColor("red")  
+       jackpotFailSFX.play();  
+       add(noJackpotText);  
+       setTimer(() => {  
+        remove(noJackpotText);  
+       }, 2000);  
+      }  
+      goldBars--;  
+      if (goldBarText) {  
+       remove(goldBarText);  
+      }  
+      if (goldBars > 0) {  
+       goldBarText = new Text("Gold Bars: " + goldBars, "20pt Arial Black");  
+       goldBarText.setPosition(width / 2 - 75, height / 2 + 200);  
+       add(goldBarText);  
+      }  
+      balanceText();  
+      updateRank();  
+      checkDebt();  
+    } else {  
+      let diceRoll = Randomizer.nextInt(1, 6);  
+      handleDiceOptions(dice, diceRoll);  
+      checkDebt();  
+    }  
+   }  
+  });  
+}
+
+function handleDiceOptions(dice, diceRoll) {  
+  // Handle Dice  
+  remove(dice);  
+  dotsList.forEach((dot) => remove(dot));  
+  
+  let rollButtonBg = new Rectangle(140, 40);  
+  rollButtonBg.setColor("black");  
+  rollButtonBg.setPosition(width / 4 - 60, height / 2 + 60);  
+  add(rollButtonBg);  
+  
+  let rollButton = new Text("Roll Dice", "20pt Comic Sans MS");  
+  rollButton.setPosition(width / 4 - 45, height / 2 + 90);  
+  rollButton.setColor("white");  
+  add(rollButton);  
+  
+  let gambleButtonBg = new Rectangle(120, 40);  
+  gambleButtonBg.setColor("black");  
+  gambleButtonBg.setPosition(width * 3 / 4 - 70, height / 2 + 60);  
+  add(gambleButtonBg);  
+  
+  let gambleButton = new Text("50/50", "20pt Comic Sans MS");  
+  gambleButton.setPosition(width * 3 / 4 - 50, height / 2 + 90);  
+  gambleButton.setColor("white");  
+  add(gambleButton);  
+  
+  let depositButtonBg = new Rectangle(140, 40);  
+  depositButtonBg.setColor("black");  
+  depositButtonBg.setPosition(width / 4 - 60, height / 2 + 120);  
+  add(depositButtonBg);  
+  
+  let depositButton = new Text("Deposit", "20pt Comic Sans MS");  
+  depositButton.setPosition(width / 4 - 40, height / 2 + 150);  
+  depositButton.setColor("white");  
+  add(depositButton);  
+  
+  let withdrawButtonBg = new Rectangle(120, 40);  
+  withdrawButtonBg.setColor("black");  
+  withdrawButtonBg.setPosition(width * 3 / 4 - 70, height / 2 + 120);  
+  add(withdrawButtonBg);  
+  
+  let withdrawButton = new Text("Withdraw", "15pt Comic Sans MS");  
+  withdrawButton.setPosition(width * 3 / 4 - 55, height / 2 + 145);  
+  withdrawButton.setColor("white");  
+  add(withdrawButton);  
+  
+  if (superDiceTickets > 0) {  
+   superDiceButtonBg = new Rectangle(160, 40);  
+   superDiceButtonBg.setColor("black");  
+   superDiceButtonBg.setPosition(width / 2 - 70, height / 2 + 180);  
+   add(superDiceButtonBg);  
+  
+   superDiceButton = new Text("Super Roll", "20pt Comic Sans MS");  
+   superDiceButton.setPosition(width / 2 - 55, height / 2 + 210);  
+   superDiceButton.setColor("gold");  
+   add(superDiceButton);  
+  }  
+  
+  mouseClickMethod((e) => {  
+   if (  
+    e.getX() >= rollButtonBg.getX() &&  
+    e.getX() <= rollButtonBg.getX() + rollButtonBg.getWidth() &&  
+    e.getY() >= rollButtonBg.getY() &&  
+    e.getY() <= rollButtonBg.getY() + rollButtonBg.getHeight()  
+   ) {  
+    remove(rollButtonBg);  
+    remove(rollButton);  
+    remove(gambleButtonBg);  
+    remove(gambleButton);  
+    remove(depositButtonBg);  
+    remove(depositButton);  
+    remove(withdrawButtonBg);  
+    remove(withdrawButton);  
+    if (superDiceButtonBg != null) {  
+      remove(superDiceButtonBg);  
+      remove(superDiceButton);  
+    }  
+    updateRank();  
+    diceSFX.play();  
+    startGame();  
+   } else if (  
+    e.getX() >= gambleButtonBg.getX() &&  
+    e.getX() <= gambleButtonBg.getX() + gambleButtonBg.getWidth() &&  
+    e.getY() >= gambleButtonBg.getY() &&  
+    e.getY() <= gambleButtonBg.getY() + gambleButtonBg.getHeight()  
+   ) {  
+    remove(rollButtonBg);  
+    remove(rollButton);  
+    remove(gambleButtonBg);  
+    remove(gambleButton);  
+    remove(depositButtonBg);  
+    remove(depositButton);  
+    remove(withdrawButtonBg);  
+    remove(withdrawButton);  
+    if (superDiceButtonBg != null) {  
+      remove(superDiceButtonBg);  
+      remove(superDiceButton);  
+    }  
+    updateRank();  
+    handleGamble();  
+   } else if (  
+    e.getX() >= depositButtonBg.getX() &&  
+    e.getX() <= depositButtonBg.getX() + depositButtonBg.getWidth() &&  
+    e.getY() >= depositButtonBg.getY() &&  
+    e.getY() <= depositButtonBg.getY() + depositButtonBg.getHeight()  
+   ) {  
+    depositBalance();  
+   } else if (  
+    e.getX() >= withdrawButtonBg.getX() &&  
+    e.getX() <= withdrawButtonBg.getX() + withdrawButtonBg.getWidth() &&  
+    e.getY() >= withdrawButtonBg.getY() &&  
+    e.getY() <= withdrawButtonBg.getY() + withdrawButtonBg.getHeight()  
+   ) {  
+    withdrawBalance();  
+   } else if (  
+    superDiceButtonBg != null &&  
+    e.getX() >= superDiceButtonBg.getX() &&  
+    e.getX() <= superDiceButtonBg.getX() + superDiceButtonBg.getWidth() &&  
+    e.getY() >= superDiceButtonBg.getY() &&  
+    e.getY() <= superDiceButtonBg.getY() + superDiceButtonBg.getHeight()  
+   ) {  
+    handleSuperDiceRoll();  
+    superDiceTickets--;  
+    if (superDiceTickets == 0) {  
+      remove(superDiceButtonBg);  
+      remove(superDiceButton);  
+    }  
+   }  
+  });  
+}  
+  
+function handleGamble() {  
+  // Handle Gamble  
+  if (rollingInProgress) return;  
+  rollingInProgress = true;  
+  
+  if (gambleText) {  
+    remove(gambleText);  
+  }  
+  
+  rollingText = new Text("   Rolling [50/50]....", "20pt Comic Sans MS");  
+  displayResult(rollingText);  
+  
+  mouseClickMethod(() => {  
+    let random = Randomizer.nextInt(1, 2);  
+    if (random == 1) {  
+       resultText = new Text("You Won! Balance x2!", "20pt Comic Sans MS");  
+       balance *= 2;  
+       updateRank();  
+    } else {  
+       resultText = new Text("You Lost! Balance is now $0!", "15pt Comic Sans MS");  
+       balance = 0;  
+       updateRank();  
+    }  
+    drawBackground();  
+    balanceText();  
+    updateRank();  
+    displayResult(resultText);  
+    remove(rollingText);  
+    rollingInProgress = false;  
+    checkDebt();  
+  });  
+}  
+
+function handleSuperDiceRoll() {  
+  let chance = Randomizer.nextInt(1, 100);  
+  if (chance <= 25) {  
+   balance *= 5;  
+   let superDiceText = new Text("You won x5 Balance!", "17.5pt Arial Black");  
+   superDiceText.setPosition(width / 2 - 150, height / 2);  
+   superDiceText.setColor("gold");  
+   add(superDiceText);  
+   setTimer(() => {  
+    remove(superDiceText);  
+   }, 2000);  
+  } else if (chance <= 50) {  
+   balance *= 10;  
+   let superDiceText = new Text("You won x10 Balance!", "17.5pt Arial Black");  
+   superDiceText.setPosition(width / 2 - 150, height / 2);  
+   superDiceText.setColor("gold");  
+   add(superDiceText);  
+   setTimer(() => {  
+    remove(superDiceText);  
+   }, 2000);  
+  } else if (chance <= 95) {  
+   balance *= 2;  
+   let superDiceText = new Text("You won x2 Balance!", "17.5pt Arial Black");  
+   superDiceText.setPosition(width / 2 - 150, height / 2);  
+   superDiceText.setColor("gold");  
+   add(superDiceText);  
+   setTimer(() => {  
+    remove(superDiceText);  
+   }, 2000);  
+  } else {  
+   let superDiceText = new Text("JACKPOT! (5%)", "40pt Arial Black");  
+   superDiceText.setPosition(width / 2 - 100, height / 2);
+   balance = balance * 777
+   jackpotSFX.play();
+   superDiceText.setColor("gold");  
+   add(superDiceText);  
+   setTimer(() => {  
+    remove(superDiceText);  
+   }, 2000);  
+  }  
+  balanceText();  
+  updateRank();  
+  checkDebt();  
+}
+
+function displayResult(textToDisplay) {  
+  // Display Result  
+  textToDisplay.setPosition(width / 2 - 125, height / 2 + 75);  
+  add(textToDisplay);  
+  
+  mouseClickMethod(() => {  
+    remove(textToDisplay);  
+    drawDice();  
+  });  
+}  
+  
+function drawDiceDots(diceRoll) {  
+  // Draw Dots  
+  let centerX = width / 2;  
+  let centerY = height / 2;  
+  let dotRadius = 10;  
+  
+  let dotPositions = {  
+    1: [[centerX, centerY]],  
+    2: [[centerX - 20, centerY - 20], [centerX + 20, centerY + 20]],  
+    3: [[centerX - 20, centerY - 20], [centerX, centerY], [centerX + 20, centerY + 20]],  
+    4: [[centerX - 20, centerY - 20], [centerX + 20, centerY - 20], [centerX - 20, centerY + 20], [centerX + 20, centerY + 20]],  
+    5: [[centerX - 20, centerY - 20], [centerX + 20, centerY -  20], [centerX, centerY], [centerX - 20, centerY + 20], [centerX + 20, centerY + 20]],  
+    6: [[centerX - 20, centerY - 20], [centerX + 20, centerY - 20], [centerX - 20, centerY], [centerX + 20, centerY], [centerX - 20, centerY + 20], [centerX + 20, centerY + 20]]  
+  };  
+  
+  dotsList.forEach((dot) => remove(dot));  
+  dotsList = [];  
+  
+  let positions = dotPositions[diceRoll];  
+  positions.forEach((pos) => {  
+    let dot = new Circle(dotRadius);  
+    dot.setPosition(pos[0], pos[1]);  
+      
+    // $100,000  
+    if (balance >= 100000 && balance < 1000000){  
+       dot.setColor("white")  
+    // $1,000,000  
+    }else if (balance >= 1000000 && balance < 10000000){  
+       dot.setColor("#fafbff")  
+    // $10,000,000  
+    }else if (balance >= 10000000 && balance < 100000000){  
+       dot.setColor("white")  
+    // $100,000,000  
+    }else if (balance >= 100000000 && balance < 1000000000){  
+       dot.setColor("#95bccc");
+     // $1,000,000,000  
+    }else if (balance >= 1000000000 && balance < 1000000000000){  
+       dot.setColor("#e8b67e");  
+       // $1,000,000,000,000+ 
+    }else if (balance >= 1000000000000){  
+       dot.setColor("#feffcb");
+    } else {  
+       dot.setColor("black");  
+    }  
+    add(dot);  
+    dotsList.push(dot);  
+  });  
+}  
+  
+  
+// Update Rank
+function updateRank() {  
+   if (balance >= 1000000000000) { // 1T  
+      rank = "Ultimate Gambler [Trillionare+]";  
+   } else if (balance >= 1000000000) { // 1B  
+      rank = "Billionaire";  
+   } else if (balance > 100000000 && balance < 1000000000) { // 100M  
+      rank = "Elite";  
+   } else if (balance >= 10000000 && balance < 100000000) { // 10M  
+      rank = "Overloaded";  
+      if (!overloadedCutsceneTriggered) {  
+        let mochiBackground = new WebImage("https://codehs.com/uploads/b78b0f8e9b76c1b974d00668ca7bf13e");  
+        overloadedCutsceneTriggered = true;  
+        remove(background);  
+        overloadedCutscene();  
+        mochiBackground.setSize(width, height);  
+        add(mochiBackground);  
+        drawDice();  
+        updateRank();  
+      }  
+   } else if (balance >= 1000000) { // 1M  
+      rank = "Millionaire";  
+   } else if (balance >= 100000) { // 100k  
+      rank = "Rich";  
+   } else if (balance >= 25000) { // 25k  
+      rank = "Middle Class";  
+   } else {  
+      rank = "Poor";  
+   }  
+  
+   if (balance < 10000000) {  
+      overloadedCutsceneTriggered = false;  
+   }  
+}  
+  
+  
+function startGame() {  
+  // Start Game  
+  removeAll();  
+  drawBackground();  
+  drawDice();  
+  balanceText();  
+  updateRank();  
+}  
+  
+function playTrigger() {  
+  // Triggers the Start  
+  removeAll();  
+  drawBackground();  
+  balanceText();  
+  updateRank();  
+   
+  // Rectangle  
+  let rt = new Rectangle(width,50);  
+  rt.setPosition(width/2 - 200,height/2);  
+  add(rt);  
+   
+  // Text  
+  let txt = new Text("Click Anywhere to Start The Game", "13pt Arial Black");  
+  txt.setPosition(width/2 - 170,height/2 + 30);  
+  txt.setColor("white");  
+  add(txt); 
+   
+  mouseClickMethod(function() {  
+    removeAll();
+    startGame();
+  });  
+}  
+  
+function checkDebt() {  
+  // Check Debt  
+  if (balance < 0) {  
+    debt();  
+  }  
+}  
+  
+  
+function withdrawBalance() {  
+  // Withdraw Money  
+  balance += savings;  
+  savings = 0;  
+  balanceText();  
+  updateRank();  
+  
+  if (savingsTextObject) {  
+    remove(savingsTextObject);  
+    savingsTextObject = null;  
+  }  
+  updateTheme();  
+}  
+  
+function debt(){    
+  // Game Over   
+  removeAll();
+  console.log("- Game Over -");
+  balance = -99999999999 * 999999999;    
+  let background = new Rectangle(width, height);    
+  background.setColor("black");    
+  add(background);    
+  menuTheme.pause();    
+  starterTheme.pause();   
+  middleClassTheme.pause();   
+  richTheme.pause();   
+  millionareTheme.pause();   
+  overloadedTheme.pause();
+  eliteTheme.pause();
+  sucessionTheme.pause();
+  timeTheme.pause();
+  diceSFX.pause();    
+  sixCutscene.pause();    
+  gameOverAudio.play();   
+  stopTimer(() => {   
+  gameOverAudio.pause();   
+  }, 5000);   
+  let gameOverText = new Text("Game Over!", "40pt Comic Sans MS");    
+  gameOverText.setPosition(width / 2 - 150, height / 2);    
+  gameOverText.setColor("red");  
+  add(gameOverText);    
+    
+  // Randomize text  
+  let texts = [  
+   "Better Luck Next Time!",  
+   "Don't Give Up!",  
+   "Don't Lose Hope...",
+   "Grind Smarter, Not Harder",  
+   "Bankrupted In Debt",  
+   "You Just Lost Your Wealth",
+    ];  
+    
+    let randomIndex = Randomizer.nextInt(0, texts.length - 1);  
+    let randomText = texts[randomIndex];  
+    let randomTextElement = new Text(randomText, "15pt Comic Sans MS");  
+    randomTextElement.setPosition(width / 2 - 135, height / 2 + 50);  
+    randomTextElement.setColor("white");  
+    add(randomTextElement);   
+    
+  if (dice) {   
+   remove(dice);   
+  }    
+  dotsList.forEach((dot) => remove(dot));    
+  dotsList = [];    
+    
+  mouseClickMethod(() => {    
+  return;    
+  });    
+    
+  keyDownMethod(() => {    
+  return;    
+  });    
+    
+  stopTimer();    
+}
+
+function updateTheme() {   
+  // Update Theme  
+  if (balance < 0){ // Normal  
+    menuTheme.pause();   
+    diceSFX.pause();   
+    sixCutscene.pause();   
+    starterTheme.pause();  
+    middleClassTheme.pause();  
+    richTheme.pause();  
+    millionareTheme.pause();  
+    overloadedTheme.pause();  
+    eliteTheme.pause();
+    sucessionTheme.pause();
+    timeTheme.pause();
+  } else if (balance >= 25000 && balance < 100000) {  // Middle Class  
+    starterTheme.pause();  
+    middleClassTheme.play();  
+    richTheme.pause();  
+    millionareTheme.pause();  
+    overloadedTheme.pause();  
+    eliteTheme.pause();
+    sucessionTheme.pause();
+    timeTheme.pause();
+  } else if (balance >= 100000 && balance < 1000000){ // Rich  
+    starterTheme.pause();  
+    middleClassTheme.pause();  
+    richTheme.play();  
+    millionareTheme.pause();  
+    overloadedTheme.pause();  
+    eliteTheme.pause(); 
+    sucessionTheme.pause();
+    timeTheme.pause();
+  } else if (balance >= 1000000 && balance < 10000000){ // Millionare  
+    starterTheme.pause();  
+    middleClassTheme.pause();  
+    richTheme.pause();  
+    millionareTheme.play();  
+    overloadedTheme.pause();  
+    eliteTheme.pause(); 
+    sucessionTheme.pause();
+    timeTheme.pause();
+  } else if (balance >= 10000000 && balance < 100000000){ // Overloaded  
+    starterTheme.pause();  
+    middleClassTheme.pause();  
+    richTheme.pause();  
+    millionareTheme.pause();  
+    overloadedTheme.play();  
+    eliteTheme.pause(); 
+    sucessionTheme.pause();
+    timeTheme.pause();
+   } else if (balance >= 100000000 && balance < 1000000000){ // Elite  
+    starterTheme.pause();  
+    middleClassTheme.pause();  
+    richTheme.pause();  
+    millionareTheme.pause();  
+    overloadedTheme.pause();  
+    eliteTheme.play();
+    sucessionTheme.pause();
+    timeTheme.pause();
+   } else if (balance >= 1000000000 && balance < 1000000000000){ // Billionaire  
+    starterTheme.pause();  
+    middleClassTheme.pause();  
+    richTheme.pause();  
+    millionareTheme.pause();  
+    overloadedTheme.pause();  
+    eliteTheme.pause();
+    sucessionTheme.play();
+    timeTheme.pause();
+   } else if (balance >= 1000000000000){ // Trillionaire+  
+    starterTheme.pause();  
+    middleClassTheme.pause();  
+    richTheme.pause();  
+    millionareTheme.pause();  
+    overloadedTheme.pause();  
+    eliteTheme.pause();
+    sucessionTheme.pause();
+    timeTheme.play();
+  } else {   
+    starterTheme.play();  
+    middleClassTheme.pause();  
+    richTheme.pause();  
+    millionareTheme.pause();  
+    overloadedTheme.pause();  
+    eliteTheme.pause();
+    sucessionTheme.pause();
+    timeTheme.pause();
+  }   
+}  
+  
+// Overloaded Cutscene  
+function overloadedCutscene(){  
+   cutscene = 1;  
+   if (cutscene == 1){  
+      removeAll();  
+      playCutscene();  
+      cutscene = 0;  
+      startGame();  
+   }    
+}  
+
+// Cutscene 
+function playCutscene() {  
+   let animationTimer;  
+  
+   const imageUrls = [  
+      "https://codehs.com/uploads/55ef3d9d930955c96142e09c2f9e38d1",  
+      "https://codehs.com/uploads/9fb275032a87de1cbe262c8885929c63",  
+      "https://codehs.com/uploads/0a5fece85e31355bc7cc7802d1628f95",  
+      "https://codehs.com/uploads/ff4874a211bd43e3757c4387b2cc89fb",  
+      "https://codehs.com/uploads/200af8943502b33ecca54506b4e0b99a",  
+      "https://codehs.com/uploads/c3adc1e1e5da9d11acc36edcc69c3134",  
+      "https://codehs.com/uploads/14c8c2847e3014b0aae040776ebc020d",  
+      "https://codehs.com/uploads/ad22063ed36bed4bbe4cb75cdc0a9f42",  
+      "https://codehs.com/uploads/7f7b4d7a70349ceca23b2c4ca5ff4160",  
+      "https://codehs.com/uploads/f965d5bfd5cfc1afef517b98d0b99c32",  
+      "https://codehs.com/uploads/34d969b788328f26657ef914557349ff",  
+      "https://codehs.com/uploads/ef0eeddc36e3d9bbc2843d8b97ab9c61",  
+      "https://codehs.com/uploads/89a4ca0e61b8346bb1dad369490d482e",  
+      "https://codehs.com/uploads/dbb3bd5314433a41a4cae4f1bb107daa",  
+      "https://codehs.com/uploads/7286846da258849c836d66dc4e062999",  
+      "https://codehs.com/uploads/8cc0a8a406f8bfd5ace12472354dca4c",  
+      "https://codehs.com/uploads/bb40042837d232adfd7012cfb21235ac",  
+      "https://codehs.com/uploads/2ada59a0afac4dffe7e1de785db547d8",  
+      "https://codehs.com/uploads/de1385a040c2919fc936e8b7280603ee",  
+      "https://codehs.com/uploads/30233676ed1608400791bc11ab4df169",  
+      "https://codehs.com/uploads/388c0c9c4e7c3a682c38c6a0e0b63603",  
+      "https://codehs.com/uploads/a2ddee0e0d6c5bde58e003b9ab4760d8",  
+      "https://codehs.com/uploads/c84efd5d8e54698fd0f30c851ae2dedd",  
+      "https://codehs.com/uploads/c30742ea4a4cf3a6ec8fee3ba6208b32",  
+      "https://codehs.com/uploads/294556375fd6d60c536234c10c6ef40e",  
+      "https://codehs.com/uploads/f4a952ec5e7d9bc9caa6d0503c194f60",  
+      "https://codehs.com/uploads/21c08b325f4c17197dae59ee8208e8f5",  
+      "https://codehs.com/uploads/b04e1f276de1d9c3d9c86c495c9d8f70",  
+      "https://codehs.com/uploads/059725d5eb4146dba1e86169195c7d2d",  
+      "https://codehs.com/uploads/d5c856ddb6b9a17feb974f91bfabb064",  
+   ];  
+  
+let currentIndex = 0;
+let currentImage;
+let preloadedImages = [];
+let isPaused = false;
+
+function preloadImages() {
+    let loadedCount = 0;
+
+    imageUrls.forEach(url => {
+        let img = new WebImage(url);
+        img.setSize(width,height)
+        img.loaded(() => {
+            loadedCount++;
+            if (loadedCount == imageUrls.length) {
+                startAnimation(); 
+            }
+        });
+        preloadedImages.push(img);
+    });
+}
+
+function cycleImages() {
+    if (currentIndex < preloadedImages.length) {
+        let nextImage = preloadedImages[currentIndex];
+
+        nextImage.loaded(() => {
+            if (currentImage) {
+                remove(currentImage);
+            }
+            add(nextImage);
+            currentImage = nextImage;
+
+            currentIndex++;
+            if (currentIndex >= preloadedImages.length) {
+                stopTimer(animationTimer); 
+                remove(currentImage);
+            }
+        });
+    }
+}
+
+function startAnimation() {
+    animationTimer = setTimer(cycleImages, 90);
+}
+
+preloadImages();
+}
