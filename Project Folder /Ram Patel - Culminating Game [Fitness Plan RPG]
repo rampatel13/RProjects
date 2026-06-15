@@ -1,1 +1,5 @@
-// 
+/* Keep in mind, I used the concepts that I learned in Java, but there a clear console part that is a bit different, so here is the URL 
+that I am giving to credit the source when applying it onto my game. The reason I used this is because I don't want to make the experience of 
+the user very dull, instead I want to make everything more clear and organized which is why I decided to add this clear console function onto my game. */
+// Source: https://stackoverflow.com/questions/2979383/how-to-clear-the-console-using-java
+
